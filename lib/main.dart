@@ -1,47 +1,50 @@
-import 'package:flow_builder/flow_builder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'src/cubits/paintings_cubit.dart';
-import 'src/cubits/post_cubit.dart';
-import 'src/cubits/selection_state.dart';
-import 'src/pages/painting_list.dart';
-import 'src/pages/painting_details.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 
-void main() {
-  runApp(
-    MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => PaintingsCubit()),
-        BlocProvider(create: (_) => PostCubit()..fetchList()),
-      ],
-      child: const MyApp(),
-    ),
-  );
+import 'cubits/home/filter/category_filter_cubit.dart';
+import 'cubits/home/filter/filter_cubit.dart';
+import 'cubits/home/filter/ingredient_filter_cubit.dart';
+import 'cubits/home/filter/pricelimit_filter_cubit copy.dart';
+import 'cubits/page_selection.dart';
+import 'cubits/home/recipe_list_cubit.dart';
+import 'cubits/home/results_header_cubit.dart';
+import 'cubits/home/search_details_cubit.dart';
+import 'cubits/home/search_options_cubit.dart';
+import 'my_app.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initHiveForFlutter(); //Initialize hive for graphql queries
+  runApp(const Providers());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  List<Page> onGeneratePages(SelectionState state, List<Page> pages) {
-    final selectedEntry = state.selectedEntry;
-    return [
-      PaintingListPage.page(paintings: []),
-      if (selectedEntry != null)
-        PaintingDetailsPage.page(painting: selectedEntry)
-    ];
-  }
+class Providers extends StatelessWidget {
+  const Providers({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Builder(builder: (context) {
-      return MaterialApp(
-        title: 'Met on Canvas',
-        debugShowCheckedModeBanner: false,
-        home: FlowBuilder(
-          state: context.watch<PaintingsCubit>().state,
-          onGeneratePages: onGeneratePages,
-        ),
-      );
-    });
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => PageSelectionCubit()),
+        BlocProvider(create: (_) => SearchDetailsCubit()),
+        BlocProvider(create: (_) => SearchOptionCubit()),
+        BlocProvider(create: (_) => RecipeListCubit()..fetchRecipes()),
+        BlocProvider(create: (_) => IngredientFilterCubit()),
+        BlocProvider(create: (_) => CategoryFilterCubit()),
+        BlocProvider(create: (_) => PriceLimitFilterCubit()),
+        BlocProvider(create: (_) => FilterCubit()),
+        BlocProvider(create: (_) => ResultsHeaderCubit()),
+        // BlocProvider(
+        //     create: (_) => FilterCubit(
+        //           ingredients: context.read<IngredientFilterCubit>(),
+        //           priceLimit: context.read<PriceLimitFilterCubit>(),
+        //           categories: context.read<CategoryFilterCubit>(),
+        //         )),
+        //On start-up, immediately call the fetchList()
+        // BlocProvider(create: (_) => PostCubit()..fetchList()),
+      ],
+      child: const MyApp(),
+    );
   }
 }

@@ -41,6 +41,7 @@ dependencies:
   equatable: ^2.0.5
   flow_builder: ^0.0.9
   http: ^0.13.5
+  graphql_flutter: ^5.1.2
 
 dev_dependencies:
   flutter_test:
